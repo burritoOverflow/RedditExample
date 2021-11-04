@@ -1,5 +1,6 @@
 import configparser
 import logging
+import datetime
 import sys
 import argparse
 import praw
@@ -45,6 +46,9 @@ def get_comments(submission: dict) -> dict:
 
 
 def log_comments(comments: dict) -> None:
+    """
+    For now, just write the comments to a log (for demo)
+    """
     title = comments["title"]
     comments = comments["comments"]
     logging.info(f"Submission {title} has {len(comments)} comments")
@@ -53,8 +57,10 @@ def log_comments(comments: dict) -> None:
 
 
 def main():
+    d = datetime.datetime.now().strftime("%I_%M%p_%B_%d_%Y")
+    f_name = f"{d}_reddit.log"
     logging.basicConfig(
-        filename="reddit.log",
+        filename=f_name,
         filemode="a",
         level=logging.DEBUG,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
