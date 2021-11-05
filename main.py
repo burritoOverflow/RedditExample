@@ -7,7 +7,7 @@ from praw.models import MoreComments
 reddit_client = reddit_client.RedditClient.get_instance()
 
 
-def fetch_submissions(subreddit: str, limit: str) -> list[str]:
+def fetch_submissions(subreddit: str, limit: int) -> list[str]:
     """
     Given a subreddit, fetch all submissions (up to the limit)
     using /hot submissions, here
@@ -60,7 +60,7 @@ def main():
     args = util.create_args()
     arg_tuple = (args.subreddit, args.numcomments, args.numsubmissions)
     if all(arg_tuple):
-        submission_list = fetch_submissions(args.subreddit, args.numsubmissions)
+        submission_list = fetch_submissions(args.subreddit, int(args.numsubmissions))
         for s in submission_list:
             comments_dict = get_comments(s)
             log_comments(comments_dict)
