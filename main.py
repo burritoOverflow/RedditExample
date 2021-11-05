@@ -1,34 +1,31 @@
-import configparser
 import logging
-import datetime
 import sys
-import argparse
-import praw
+import reddit_client
+import util
 from praw.models import MoreComments
 
-config = configparser.ConfigParser()
-config.read("config.ini")
-reddit = praw.Reddit(
-    client_id=config["REDDIT"]["client_id"],
-    client_secret=config["REDDIT"]["client_secret"],
-    user_agent=config["REDDIT"]["user_agent"],
-)
+reddit_client = reddit_client.RedditClient.get_instance()
 
 
 def fetch_submissions(subreddit: str, limit: str) -> list[str]:
     """
     Given a subreddit, fetch all submissions (up to the limit)
-    Defaults to /hot submissions
+    using /hot submissions, here
     """
     logging.info(f"Fetching {limit} submission from subreddit {subreddit}")
     submission_list = list()
-    for submission in reddit.subreddit(subreddit).hot(limit=limit):
+    # change this argument from hot to get new, for example
+    for submission in reddit_client.subreddit(subreddit).hot(limit=limit):
         submission_list.append(submission)
     logging.info(f"{limit} Submissions fetched")
     return submission_list
 
 
 def get_comments(submission: dict) -> dict:
+    """
+    Given a submission, traverse the top level comments and create
+    and return a dict of those comments where {k: v} is {submissionTitle: [comments]}
+    """
     logging.info(f"Fetching from {submission.title}")
     # return {submission.title: [comment.body for comment in submission.comments]}
     submission_comment_dict = {"title": submission.title, "comments": list()}
@@ -57,28 +54,15 @@ def log_comments(comments: dict) -> None:
 
 
 def main():
-    d = datetime.datetime.now().strftime("%I_%M%p_%B_%d_%Y")
-    f_name = f"{d}_reddit.log"
-    logging.basicConfig(
-        filename=f_name,
-        filemode="a",
-        level=logging.DEBUG,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-s",
-        "--subreddit",
-        help="the subreddit for submissions and comments",
-    )
-    args = parser.parse_args()
-    if args.subreddit:
+    util.set_logging_config()
+    args = util.create_args()
+    if args.subreddit and args.numcomments:
         submission_list = fetch_submissions(args.subreddit, 10)
         for s in submission_list:
             comments_dict = get_comments(s)
             log_comments(comments_dict)
     else:
-        print("usage: python3 main.py <subreddit>")
+        print("usage: python3 main.py -s <subreddit> -n <numcomments>")
         sys.exit(1)
 
 
