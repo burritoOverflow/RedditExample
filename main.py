@@ -48,7 +48,9 @@ def log_comments(comments: dict) -> None:
     """
     title = comments["title"]
     comments = comments["comments"]
-    logging.info(f"Submission {title} has {len(comments)} comments")
+    log_str = f"Submission {title} has {len(comments)} comments"
+    logging.info(log_str)
+    print(log_str)
     for i, comment in enumerate(comments):
         logging.info(f"Comment {i} {comment}")
 
@@ -56,13 +58,16 @@ def log_comments(comments: dict) -> None:
 def main():
     util.set_logging_config()
     args = util.create_args()
-    if args.subreddit and args.numcomments:
-        submission_list = fetch_submissions(args.subreddit, 10)
+    arg_tuple = (args.subreddit, args.numcomments, args.numsubmissions)
+    if all(arg_tuple):
+        submission_list = fetch_submissions(args.subreddit, args.numsubmissions)
         for s in submission_list:
             comments_dict = get_comments(s)
             log_comments(comments_dict)
     else:
-        print("usage: python3 main.py -s <subreddit> -n <numcomments>")
+        print(
+            "usage: python3 main.py -s <subreddit> -n <numcomments> -c <numsubmissions>"
+        )
         sys.exit(1)
 
 

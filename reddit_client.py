@@ -7,6 +7,9 @@ class RedditClient:
 
     @staticmethod
     def get_instance():
+        """
+        Construct the instance if one does not exist
+        """
         if RedditClient.reddit_client_instance == None:
             RedditClient()
         return RedditClient.reddit_client_instance

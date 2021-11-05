@@ -42,6 +42,12 @@ def create_args() -> argparse.Namespace:
         "--subreddit",
         help="the subreddit for submissions and comments",
     )
-    parser.add_argument("-n", "--numcomments", help="The number of comments to fetch")
+    parser.add_argument("-c", "--numcomments", help="The number of comments to fetch")
+    parser.add_argument(
+        "-n",
+        "--numsubmissions",
+        help="The number of submissions to fetch from the subreddit",
+    )
+
     args = parser.parse_args()
     return args
