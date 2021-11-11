@@ -21,21 +21,31 @@ def fetch_submissions(subreddit: str, limit: int) -> list[str]:
     return submission_list
 
 
-def get_comments(submission: dict) -> dict:
+def get_comments(submission: dict, comment_limit: int) -> dict:
     """
     Given a submission, traverse the top level comments and create
     and return a dict of those comments where {k: v} is {submissionTitle: [comments]}
     """
-    logging.info(f"Fetching from {submission.title}")
-    # return {submission.title: [comment.body for comment in submission.comments]}
+    logging.info(
+        f"Fetching comments from {submission.title} up to limit {comment_limit}"
+    )
+    # returns {submission.title: [comment.body for comment in submission.comments]}
     submission_comment_dict = {"title": submission.title, "comments": list()}
+    fetched_comment_cnt = 0
+
     for comment in submission.comments:
+        if fetched_comment_cnt == comment_limit:
+            break
+
         # for now, only get top-level comments, not threads on those comments
         # see: https://praw.readthedocs.io/en/stable/tutorials/comments.html for exp
         if isinstance(comment, MoreComments):
             continue
         else:
             submission_comment_dict["comments"].append(comment.body)
+            # only increment on stored comments
+            fetched_comment_cnt += 1
+
     logging.info(
         f"Got {len(submission_comment_dict['comments'])} comments on submission: {submission_comment_dict['title']}"
     )
@@ -48,7 +58,7 @@ def log_comments(comments: dict) -> None:
     """
     title = comments["title"]
     comments = comments["comments"]
-    log_str = f"Submission {title} has {len(comments)} comments"
+    log_str = f"Submission: {title} has {len(comments)} comments"
     logging.info(log_str)
     print(log_str)
     for i, comment in enumerate(comments):
@@ -60,9 +70,15 @@ def main():
     args = util.create_args()
     arg_tuple = (args.subreddit, args.numcomments, args.numsubmissions)
     if all(arg_tuple):
-        submission_list = fetch_submissions(args.subreddit, int(args.numsubmissions))
+        # fetch submissions from the provided subreddit
+        submission_list = fetch_submissions(
+            subreddit=args.subreddit, limit=int(args.numsubmissions)
+        )
+        # fetch the individual comments up to the limit provided from the submission
         for s in submission_list:
-            comments_dict = get_comments(s)
+            comments_dict = get_comments(
+                submission=s, comment_limit=int(args.numcomments)
+            )
             log_comments(comments_dict)
     else:
         print(
